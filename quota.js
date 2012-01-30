@@ -1,18 +1,18 @@
-function AbstractStorageQuotaChecker() {
+function QuotaCalculator() {
 }
 
 
-AbstractStorageQuotaChecker.prototype = {
+QuotaCalculator.prototype = {
   /**
    * Allocates the specified number of bytes in this storage.
    */
-  allocateSpace: function(bytes) {
+  allocateSpace: function(bytes, callback) {
   },
 
   /**
    * @return true iff this kind of storage is available.
    */
-  detect: function() {
+  isAvailable: function() {
   },
 
   /**
@@ -21,9 +21,20 @@ AbstractStorageQuotaChecker.prototype = {
   clear: function() {
   },
 
-  /**
-   * Allocates increasing amounts of space using this method until we fail.
-   */
-  calculateLimit: function() {
+  calculateLimit: function(callback) {
+    var calc = this;
+    // TODO: get a more specific quota limit.
+    for (var i = 0; i < 200; i++) {
+      var bytes = Math.pow(2, i);
+      this.allocateSpace(bytes, function(result) {
+        if (result.error) {
+          // We've hit the limit.
+          var limit = bytes / 2;
+          calc.limit = limit;
+          callback();
+        }
+      });
+    }
   }
+
 };
